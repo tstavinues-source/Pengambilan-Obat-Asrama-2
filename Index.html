@@ -129,7 +129,11 @@
     <script>
         // --- GLOBAL VARIABLES & CONSTANTS ---
         let medicines = []; // Akan diisi dengan data dari Google Sheet
-        const SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSsRY-xKXv1oH5GtJOkV6nT4qB1uzzPrC9E3LVLJ6MSXjiNPqTVFKQL_8bauPFTDvCm4_1icz81-7cq/pub?output=csv';
+        
+        // --- PERBAIKAN: Mengganti Proxy untuk mengatasi masalah CORS ---
+        const SPREADSHEET_URL_RAW = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSsRY-xKXv1oH5GtJOkV6nT4qB1uzzPrC9E3LVLJ6MSXjiNPqTVFKQL_8bauPFTDvCm4_1icz81-7cq/pub?output=csv';
+        const SPREADSHEET_URL = `https://api.allorigins.win/raw?url=${encodeURIComponent(SPREADSHEET_URL_RAW)}`;
+
 
         // --- DATABASE INTERNAL UNTUK INFORMASI DETAIL ---
 
@@ -267,7 +271,6 @@
             if(medicineList.length > 0) resultsContainer.appendChild(noResultsMessage);
 
             medicineList.forEach((med, index) => {
-                // --- PERBAIKAN LOGIKA WARNA STOK ---
                 const stockTextRaw = (med.stok || '').toLowerCase();
                 const stockNumber = parseInt(stockTextRaw) || 0;
 
@@ -284,11 +287,10 @@
                     stockClass = 'text-green-400 bg-green-900/50';
                 } else {
                     stockText = 'Stok Belum Diketahui';
-                    stockClass = 'text-slate-400 bg-slate-700'; // Warna default jika format tidak dikenali
+                    stockClass = 'text-slate-400 bg-slate-700';
                 }
 
                 const card = document.createElement('div');
-                // Menambahkan class 'drug-card' untuk transisi
                 card.className = "drug-card card-enter bg-slate-800 rounded-2xl shadow-md overflow-hidden border border-slate-700 hover:border-teal-500 hover:shadow-2xl hover:shadow-teal-500/10";
                 card.style.animationDelay = `${index * 50}ms`;
                 
@@ -380,7 +382,6 @@
         });
 
         document.addEventListener('DOMContentLoaded', async () => {
-            // --- Background Changer ---
             const backgrounds = [ '1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg' ];
             let currentBgIndex = 0;
 
@@ -393,7 +394,6 @@
             changeBackground();
             setInterval(changeBackground, 5000);
 
-            // --- Fetch Data ---
             medicines = await fetchMedicineData();
             if (medicines.length > 0) {
                 createCategoryButtons();
