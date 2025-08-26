@@ -14,15 +14,12 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            /* Latar belakang awal diatur di sini, akan diubah oleh JS */
             background-color: #0f172a; /* slate-900 */
             background-size: cover;
             background-position: center center;
             background-repeat: no-repeat;
-            /* Transisi untuk pergantian gambar yang mulus */
             transition: background-image 1s ease-in-out;
         }
-        /* Animation for card appearance */
         .card-enter {
             opacity: 0;
             transform: translateY(20px);
@@ -34,7 +31,6 @@
                 transform: translateY(0);
             }
         }
-        /* Custom glow effect for active button */
         .active-glow {
             box-shadow: 0 0 15px rgba(20, 184, 166, 0.5), 0 0 5px rgba(20, 184, 166, 0.7);
         }
@@ -52,17 +48,12 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        
-        /* --- PERBAIKAN EFEK NEON --- */
         .drug-card {
-            /* Transisi untuk efek maju dan perubahan bayangan */
             transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
         }
-
-        /* Efek Neon Glow untuk kartu yang diklik */
         .neon-glow {
-            transform: scale(1.03); /* Efek maju ke depan */
-            box-shadow: 0 10px 30px rgba(20, 184, 166, 0.4); /* Cahaya di bawah blok */
+            transform: scale(1.03);
+            box-shadow: 0 10px 30px rgba(20, 184, 166, 0.4);
             border-color: #14b8a6;
         }
     </style>
@@ -128,15 +119,12 @@
 
     <script>
         // --- GLOBAL VARIABLES & CONSTANTS ---
-        let medicines = []; // Akan diisi dengan data dari Google Sheet
+        let medicines = []; // Akan diisi dengan data dari Google Apps Script
         
-        // --- PERBAIKAN: Mengganti Proxy untuk mengatasi masalah CORS ---
-        const SPREADSHEET_URL_RAW = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSsRY-xKXv1oH5GtJOkV6nT4qB1uzzPrC9E3LVLJ6MSXjiNPqTVFKQL_8bauPFTDvCm4_1icz81-7cq/pub?output=csv';
-        const SPREADSHEET_URL = `https://api.allorigins.win/raw?url=${encodeURIComponent(SPREADSHEET_URL_RAW)}`;
+        // --- PERUBAHAN: URL langsung ke Google Apps Script ---
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwfNRD98XtqGjr_6uoflO3u2n51ybu-gbRYry0mSfC8nLYIDijW5MehLqMhFRMlW4C-/exec';
 
-
-        // --- DATABASE INTERNAL UNTUK INFORMASI DETAIL ---
-
+        // --- DATABASE INTERNAL UNTUK INFORMASI DETAIL (TETAP SAMA) ---
         const drugUsageInfo = {
             'bintamox': { kegunaan: 'Untuk infeksi bakteri umum, seperti sakit gigi, radang tenggorokan karena bakteri, infeksi telinga, atau infeksi kulit.' },
             'samquinor': { kegunaan: 'Untuk infeksi bakteri yang lebih kuat, seperti infeksi saluran kemih, infeksi pencernaan, atau infeksi tulang dan sendi.' },
@@ -147,7 +135,7 @@
             'cetirizine hcl': { kegunaan: 'Meredakan gejala alergi seperti hidung meler, bersin-bersin, mata berair, dan gatal-gatal pada kulit atau biduran.' },
             'brochifar': { kegunaan: 'Membantu mengencerkan dahak yang kental di tenggorokan, sehingga lebih mudah dikeluarkan saat batuk (untuk batuk berdahak).' },
             'flucadex': { kegunaan: 'Meredakan paket gejala flu, seperti demam, sakit kepala, hidung tersumbat, dan bersin-bersin.' },
-            'Epexol': { kegunaan: 'Membantu mengencerkan dahak yang kental di tenggorokan, sehingga lebih mudah dikeluarkan saat batuk (untuk batuk berdahak).' },
+            'roverton': { kegunaan: 'Membantu mengencerkan dahak yang kental di tenggorokan, sehingga lebih mudah dikeluarkan saat batuk (untuk batuk berdahak).' },
             'ambrochloride': { kegunaan: 'Membantu mengencerkan dahak yang kental di tenggorokan, sehingga lebih mudah dikeluarkan saat batuk (untuk batuk berdahak).' },
             'molexflu pe': { kegunaan: 'Meredakan paket gejala flu, seperti demam, sakit kepala, hidung tersumbat, dan bersin-bersin.' },
             'flutrop': { kegunaan: 'Meredakan paket gejala flu, seperti demam, sakit kepala, hidung tersumbat, dan bersin-bersin.' },
@@ -179,7 +167,7 @@
             'cetirizine hcl': { dosis: '1 tablet (10 mg) 1 kali sehari', aturan: 'Dapat diminum sebelum atau sesudah makan.', max: '1 tablet per hari' },
             'brochifar': { dosis: '1 kaplet 3 kali sehari', aturan: 'Diminum sesudah makan.', max: '3 kaplet per hari' },
             'flucadex': { dosis: '1 kaplet 3 kali sehari', aturan: 'Diminum sesudah makan.', max: '3 kaplet per hari' },
-            'Epexol': { dosis: '1 tablet (30 mg) 3 kali sehari', aturan: 'Diminum sesudah makan.', max: '3 tablet per hari' },
+            'roverton': { dosis: '1 tablet (30 mg) 3 kali sehari', aturan: 'Diminum sesudah makan.', max: '3 tablet per hari' },
             'ambrochloride': { dosis: '1 tablet (30 mg) 2-3 kali sehari', aturan: 'Diminum sesudah makan.', max: '3 tablet per hari' },
             'molexflu pe': { dosis: '1 kaplet 3 kali sehari', aturan: 'Diminum sesudah makan.', max: '3 kaplet per hari' },
             'flutrop': { dosis: '1 kaplet 3 kali sehari', aturan: 'Diminum sesudah makan.', max: '3 kaplet per hari' },
@@ -214,10 +202,12 @@
 
         async function fetchMedicineData() {
             try {
-                const response = await fetch(SPREADSHEET_URL);
+                // --- PERUBAHAN: Fetch langsung ke URL script dan mengharapkan JSON ---
+                const response = await fetch(SCRIPT_URL);
                 if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
-                const csvText = await response.text();
-                return parseCSV(csvText);
+                const jsonData = await response.json();
+                // --- PERUBAHAN: Memanggil fungsi baru untuk memproses JSON ---
+                return processJSON(jsonData);
             } catch (error) {
                 console.error("Gagal mengambil data obat:", error);
                 loadingState.classList.add('hidden');
@@ -226,43 +216,39 @@
             }
         }
 
-        function parseCSV(text) {
-            const lines = text.trim().replace(/\r/g, '').split('\n');
-            const headers = lines[0].split(',');
-            
-            const headerMap = { 'Kategori': 'kategori', 'Nama Obat': 'nama', 'Stok Obat': 'stok', 'Kegunaan Obat': 'kegunaan_asli' };
-            const mappedHeaders = headers.map(h => headerMap[h.trim()]);
+        // --- FUNGSI BARU: Untuk memproses data JSON dari Google Apps Script ---
+        function processJSON(data) {
+            // Data dari Apps Script adalah array of objects
+            return data.map(entry => {
+                const newEntry = {
+                    // Mapping nama field dari JSON ke nama yang digunakan di aplikasi
+                    kategori: entry.Kategori,
+                    nama: entry.Nama_Obat,
+                    stok: entry.Stok_Obat,
+                    kegunaan_asli: entry.Kegunaan_Obat 
+                };
 
-            const data = lines.slice(1).map(line => {
-                const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                const entry = {};
-                mappedHeaders.forEach((key, index) => {
-                    if (key) {
-                        let value = (values[index] || '').trim().replace(/^"|"$/g, '');
-                        entry[key] = value;
-                    }
-                });
-
-                const drugNameLower = (entry.nama || '').toLowerCase();
+                const drugNameLower = (newEntry.nama || '').toLowerCase();
                 
+                // Menggunakan kembali logika yang ada untuk menggabungkan info detail
                 const useInfo = drugUsageInfo[drugNameLower];
-                entry.kegunaan = useInfo ? useInfo.kegunaan : (entry.kegunaan_asli || 'Informasi tidak tersedia.');
+                newEntry.kegunaan = useInfo ? useInfo.kegunaan : (newEntry.kegunaan_asli || 'Informasi tidak tersedia.');
                 
                 const dosageInfo = drugDosageInfo[drugNameLower];
                 if (dosageInfo) {
-                    entry.dosis = dosageInfo.dosis;
-                    entry.aturan = dosageInfo.aturan;
-                    entry.max = dosageInfo.max;
+                    newEntry.dosis = dosageInfo.dosis;
+                    newEntry.aturan = dosageInfo.aturan;
+                    newEntry.max = dosageInfo.max;
                 } else {
-                    entry.dosis = 'Hubungi apoteker';
-                    entry.aturan = 'Hubungi apoteker';
-                    entry.max = 'Hubungi apoteker';
+                    newEntry.dosis = 'Hubungi apoteker';
+                    newEntry.aturan = 'Hubungi apoteker';
+                    newEntry.max = 'Hubungi apoteker';
                 }
-                delete entry.kegunaan_asli;
-                return entry;
-            });
-            return data.filter(entry => entry.nama && entry.nama.trim() !== '');
+                delete newEntry.kegunaan_asli; // Menghapus field sementara
+                return newEntry;
+            }).filter(entry => entry.nama && entry.nama.trim() !== ''); // Filter entri kosong
         }
+
 
         function displayMedicines(medicineList) {
             loadingState.classList.add('hidden');
@@ -271,7 +257,7 @@
             if(medicineList.length > 0) resultsContainer.appendChild(noResultsMessage);
 
             medicineList.forEach((med, index) => {
-                const stockTextRaw = (med.stok || '').toLowerCase();
+                const stockTextRaw = String(med.stok || '').toLowerCase();
                 const stockNumber = parseInt(stockTextRaw) || 0;
 
                 let stockText, stockClass;
@@ -382,7 +368,7 @@
         });
 
         document.addEventListener('DOMContentLoaded', async () => {
-            const backgrounds = [ '1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg' ];
+            const backgrounds = [ 'https://placehold.co/1920x1080/0f172a/334155?text=Background+1', 'https://placehold.co/1920x1080/0f172a/334155?text=Background+2', 'https://placehold.co/1920x1080/0f172a/334155?text=Background+3', 'https://placehold.co/1920x1080/0f172a/334155?text=Background+4', 'https://placehold.co/1920x1080/0f172a/334155?text=Background+5' ];
             let currentBgIndex = 0;
 
             function changeBackground() {
@@ -403,4 +389,3 @@
     </script>
 </body>
 </html>
-
