@@ -18,7 +18,6 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            /* Smooth transition for background image changes */
             transition: background-image 1.5s ease-in-out;
         }
         .card-enter {
@@ -91,6 +90,7 @@
             align-items: center;
             padding: 1rem 1.5rem;
             border-bottom: 1px solid #334155; /* slate-700 */
+            flex-shrink: 0;
         }
         .modal-body {
             flex-grow: 1;
@@ -141,7 +141,6 @@
                 <!-- Medicine cards will be inserted here by JS -->
             </div>
             
-            <!-- No Results Message -->
             <div id="no-results" class="hidden text-center py-16 col-span-full">
                  <svg class="mx-auto h-12 w-12 text-slate-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
                   <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"></path>
@@ -158,9 +157,7 @@
             <div class="modal-header">
                 <h2 class="text-xl font-bold text-white">Form Pengambilan Obat</h2>
                 <button id="close-modal-btn" class="text-slate-400 hover:text-white transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
                 </button>
             </div>
             <div class="modal-body">
@@ -171,7 +168,7 @@
 
     <script>
         // --- GLOBAL VARIABLES & CONSTANTS ---
-        let medicines = []; 
+        let medicines = [];
         const DATABASE_URL = 'https://script.google.com/macros/s/AKfycbzq_i6UIlVzcERrd_3JdoPD5Kwmu6ZkLTZ86qfC8zg-DNlFo1_bEJBqcaeoFBl2_cSc/exec';
 
         // --- DOM ELEMENTS ---
@@ -183,11 +180,10 @@
         const formModal = document.getElementById('form-modal');
         const closeModalBtn = document.getElementById('close-modal-btn');
         
-        // --- CONSTANTS FOR STYLING ---
         const ACTIVE_BUTTON_CLASSES = ['active-glow', 'bg-teal-500', 'text-white'];
         const INACTIVE_BUTTON_CLASSES = ['bg-slate-700', 'text-slate-200', 'hover:bg-slate-600'];
 
-        // --- DATA FETCHING & PROCESSING ---
+        // --- DATA FETCHING ---
         async function fetchMedicineData() {
             try {
                 const response = await fetch(DATABASE_URL);
@@ -211,6 +207,11 @@
             if(medicineList.length > 0) resultsContainer.appendChild(noResultsMessage);
 
             medicineList.forEach((med, index) => {
+                // --- DEBUGGING: Cetak data obat pertama ke konsol browser ---
+                if (index === 0) {
+                    console.log("Data untuk obat pertama yang diterima:", med);
+                }
+
                 const stockNumber = parseInt(med.Stok_Obat) || 0;
                 let stockText, stockClass;
 
@@ -226,27 +227,26 @@
                 }
 
                 const card = document.createElement('div');
-                // MODIFICATION: Added bg-slate-800/75 for 75% opacity and backdrop-blur-sm for frosted glass effect
                 card.className = "card-enter bg-slate-800/75 backdrop-blur-sm rounded-2xl shadow-md overflow-hidden border border-slate-700 hover:border-teal-500 hover:shadow-2xl hover:shadow-teal-500/10 flex flex-col";
+                card.dataset.index = index;
                 card.style.animationDelay = `${index * 50}ms`;
                 
                 card.innerHTML = `
                     <div class="p-6 flex flex-col h-full">
                         <div class="flex-grow">
-                            <div class="flex justify-between items-start mb-3">
+                             <div class="flex justify-between items-start mb-3">
                                 <span class="text-sm font-medium text-teal-300 bg-teal-900/50 px-3 py-1 rounded-full">${med.Kategori || 'Lainnya'}</span>
                                 <span class="text-sm font-semibold ${stockClass} px-3 py-1 rounded-full">${stockText}</span>
                             </div>
                             <h2 class="text-2xl font-bold text-white mb-2">${med.Nama_Obat}</h2>
-                            <p class="text-slate-400 mb-4"><strong class="font-semibold text-slate-300">Kandungan:</strong> ${med.Kandungan_Aktif || 'Tidak diketahui'}</p>
+                             <p class="text-slate-400 mb-4"><strong class="font-semibold text-slate-300">Kandungan:</strong> ${med.Kandungan_Aktif || 'Tidak diketahui'}</p>
                             <p class="text-slate-400 mb-5 flex-grow"><strong class="font-semibold text-slate-300">Kegunaan:</strong> ${med.Kegunaan_Lengkap || 'Informasi tidak tersedia.'}</p>
-                            
                             <div class="space-y-3 text-sm border-t border-slate-700 pt-4">
                                 <p><strong class="font-semibold text-slate-300 w-32 inline-block">Dosis:</strong> ${med.Dosis__Kekuatan || 'Sesuai petunjuk'}</p>
                                 <p><strong class="font-semibold text-slate-300 w-32 inline-block">Aturan Minum:</strong> ${med.Aturan_Minum || 'Sesuai petunjuk'}</p>
                                 <p><strong class="font-semibold text-slate-300 w-32 inline-block">Frekuensi Maks:</strong> ${med.Frekuensi_Maksimal || 'Sesuai petunjuk'}</p>
                                 <p><strong class="font-semibold text-slate-300 w-32 inline-block">Efek Samping:</strong> ${med.Efek_Samping_Umum || 'Tidak diketahui'}</p>
-                                <p><strong class="font-semibold text-slate-300 w-32 inline-block">Catatan Penting:</strong> ${med.Aturan_Pakai___Catatan || '-'}</p>
+                                <p><strong class="font-semibold text-slate-300 w-32 inline-block">Catatan Penting:</strong> ${med['Aturan_Pakai_&_Catatan'] || '-'}</p>
                             </div>
                         </div>
                         <div class="mt-5 pt-4 border-t border-slate-700">
@@ -262,11 +262,9 @@
         function createCategoryButtons() {
             const categories = [...new Set(medicines.map(m => m.Kategori).filter(Boolean))];
             let buttonsHTML = `<button data-filter="all" class="cat-button px-4 py-2 rounded-lg font-semibold transition-all shadow-md">Semua</button>`;
-            
             categories.sort().forEach(cat => {
                  buttonsHTML += `<button data-filter="${cat}" class="cat-button px-4 py-2 rounded-lg font-semibold transition-all">${cat}</button>`;
             });
-            
             categoryButtonsContainer.innerHTML = buttonsHTML;
             const buttons = document.querySelectorAll('.cat-button');
             buttons.forEach(button => {
@@ -294,7 +292,6 @@
                 (med.Kandungan_Aktif || '').toLowerCase().includes(searchTerm)
             );
             displayMedicines(filteredMedicines);
-            
             document.querySelectorAll('.cat-button').forEach(button => {
                 button.classList.remove(...ACTIVE_BUTTON_CLASSES);
                 if (button.dataset.filter === 'all') {
@@ -305,31 +302,23 @@
             });
         });
         
-        // Modal Listeners
         resultsContainer.addEventListener('click', function(event) {
             if (event.target.classList.contains('open-form-btn')) {
                 formModal.classList.add('visible');
             }
         });
 
-        closeModalBtn.addEventListener('click', () => {
-            formModal.classList.remove('visible');
-        });
-
-        formModal.addEventListener('click', (event) => {
-            if (event.target === formModal) { // Click on overlay
-                formModal.classList.remove('visible');
-            }
-        });
+        // Modal Closing Listeners
+        [closeModalBtn, formModal].forEach(el => el.addEventListener('click', (e) => {
+            if (e.target === el) formModal.classList.remove('visible');
+        }));
 
         // Initialize the app
         document.addEventListener('DOMContentLoaded', async () => {
-            // --- NEW: DYNAMIC BACKGROUND SCRIPT ---
             const backgrounds = Array.from({ length: 10 }, (_, i) => `${i + 1}.jpg`);
             let shuffledBackgrounds = [];
             let currentBgIndex = 0;
 
-            // Fisher-Yates (aka Knuth) Shuffle function for true randomness
             function shuffleArray(array) {
                 let currentIndex = array.length, randomIndex;
                 while (currentIndex !== 0) {
@@ -341,26 +330,20 @@
             }
 
             function changeBackground() {
-                // If we've shown all shuffled images, reshuffle the original list
                 if (currentBgIndex >= shuffledBackgrounds.length) {
                     shuffledBackgrounds = shuffleArray([...backgrounds]);
                     currentBgIndex = 0;
                 }
-
                 const nextImage = shuffledBackgrounds[currentBgIndex];
-                // Add a dark overlay to ensure text is always readable over any image
                 const overlay = 'linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.85))';
                 document.body.style.backgroundImage = `${overlay}, url('${nextImage}')`;
-                
                 currentBgIndex++;
             }
 
-            // Initial setup for background
             shuffledBackgrounds = shuffleArray([...backgrounds]);
-            changeBackground(); // Set the first random background immediately
-            setInterval(changeBackground, 20000); // Change every 20 seconds
+            changeBackground(); 
+            setInterval(changeBackground, 20000); 
             
-            // --- ORIGINAL INITIALIZATION SCRIPT ---
             medicines = await fetchMedicineData();
             if (medicines.length > 0) {
                 createCategoryButtons();
@@ -370,4 +353,7 @@
     </script>
 </body>
 </html>
+
+
+
 
